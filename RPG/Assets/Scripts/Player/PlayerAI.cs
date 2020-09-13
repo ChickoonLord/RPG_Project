@@ -5,8 +5,9 @@ using UnityEngine;
 public class PlayerAI : EntityAI
 {
     public float jumpForce = 10;
-    private float airTime = 0f;
-    public float wallJumpTime = 0f;
+    private float jumpTime = 1;
+    private float airTime = 1;
+    public float wallJumpTime = 1;
     public float airControl = 3;
     public float wallJumpUpForce = 7;
     public float wallJumpSideForce = 4.5f;
@@ -21,8 +22,8 @@ public class PlayerAI : EntityAI
     public GameObject weaponPrefab;
     private Transform attackPos;
     private Transform attackRotation;
-    private Controls controls;
-    private static PlayerAI instance;
+    public Controls controls;
+    public static PlayerAI instance;
     protected override void Awake()
     {
         if (instance){
@@ -31,10 +32,12 @@ public class PlayerAI : EntityAI
         instance = this;
 
         base.Awake();
+        hp = 20;
 
         controls = new Controls();
-        controls.Player.Jump.performed += ctx => Jump();
+        controls.Player.Jump.performed += ctx => JumpPressed();
         controls.Player.Attack.performed += ctx => AttackPressed();
+        controls.Player.Interact.performed += ctx => InteractPressed();
 
         attackRotation = transform.Find("attackRotation");
         attackPos = attackRotation.Find("attackPos");
@@ -48,6 +51,8 @@ public class PlayerAI : EntityAI
         if (iFrames > 0){
             iFrames -= Time.deltaTime;
         }
+        if (jumpTime < 1)
+            jumpTime += Time.deltaTime;
     }
     private void AttackPressed(){
         if (attackCooldown <= 0){
@@ -95,6 +100,15 @@ public class PlayerAI : EntityAI
         }
         iFrames = 0.6f;
         return base.TakeDamage(damage, knockback, damageType);
+    }
+    private void InteractPressed(){
+        GameObject _nearestInteractable = FindNearestWithTag("Interactable");
+        if (!_nearestInteractable)
+            return;
+        Interactable _interactable = _nearestInteractable.GetComponent<Interactable>();
+        if (_interactable.playerInRadius){
+            _interactable.Interact();
+        }
     }
     void FixedUpdate(){
         #region Detect Collisions With Terrain
@@ -164,13 +178,11 @@ public class PlayerAI : EntityAI
             }
         }
         #endregion
-    }
-    private void Jump(){
-        Debug.Log("Jump");
         //Jump
-        if (!touchingTop && !stunned && rb.velocity.y <= 0){
+        if (!touchingTop && !stunned && rb.velocity.y <= 0.05 && jumpTime < 0.1){
             if (airTime < 0.1) {
                 rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                jumpTime = 1;
             }
             else if (wallJumpTime < 0.05 && wallJumpUpForce > 0) {
                 if (touchingLeft && rb.velocity.x <= 0){
@@ -181,6 +193,9 @@ public class PlayerAI : EntityAI
                 }
             }
         }
+    }
+    private void JumpPressed(){
+        jumpTime = 0;
     }
     private void OnEnable() {
         controls.Enable();

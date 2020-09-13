@@ -5,8 +5,17 @@ using UnityEngine;
 public class Interactable : MonoBehaviour
 {
     public float radius = 2f;
-    protected virtual void Interact(){
-        
+    public bool playerInRadius = false;
+    public virtual void Interact(){
+
+    }
+    protected virtual void Update() {
+        if (!PlayerAI.instance) return;
+        if (Vector2.Distance(transform.position,PlayerAI.instance.gameObject.transform.position) <= radius){
+            playerInRadius = true;
+        } else {
+            playerInRadius = false;
+        }
     }
     private void OnDrawGizmosSelected() {
         Gizmos.color = Color.yellow;

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public abstract class EntityAI : MonoBehaviour, IDamageable
 {
-    public int hp;
+    protected int hp;
     protected int maxHp;
     public bool facingRight = true;
     protected bool isAttacking = false;
@@ -56,5 +56,21 @@ public abstract class EntityAI : MonoBehaviour, IDamageable
         } else {
             return false;
         }
+    }
+    protected virtual GameObject FindNearestWithTag(string tag = "Player", float maxRange = Mathf.Infinity){
+        GameObject[] _targets;
+        _targets = GameObject.FindGameObjectsWithTag(tag);
+        GameObject closest = null;
+        float sqrDistance = Mathf.Pow(maxRange,2);
+        Vector3 position = transform.position;
+        foreach (GameObject potentialTarget in _targets){
+            float _sqrDistance = (potentialTarget.transform.position-position).sqrMagnitude;
+            if (_sqrDistance < sqrDistance)
+            {
+                closest = potentialTarget;
+                sqrDistance = _sqrDistance;
+            }
+        }
+        return closest;
     }
 }

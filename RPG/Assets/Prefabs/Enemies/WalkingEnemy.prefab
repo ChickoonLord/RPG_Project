@@ -77,9 +77,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bf40763a83191d4dbbe7159c231ba0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hp: 10
+  hp: 0
   facingRight: 1
   moveSpeed: 2
+  enemy: {fileID: 11400000, guid: f1bf0cf5cb3170e4293e5cc12c143404, type: 2}
   platformLayerMask:
     serializedVersion: 2
     m_Bits: 256
