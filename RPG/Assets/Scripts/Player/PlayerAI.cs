@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class PlayerAI : EntityAI
 {
+    //Movement variables;
     public float jumpForce = 10;
-    private float jumpTime = 1;
+    private float inpJumpTime = 1;
     private float airTime = 1;
     public float wallJumpTime = 1;
     public float airControl = 3;
@@ -19,6 +20,7 @@ public class PlayerAI : EntityAI
     [SerializeField] protected LayerMask attackLayerMask;
     float iFrames = 0;
     float attackCooldown = 0;
+    private float inpAttackTime = 1;
     public GameObject weaponPrefab;
     private Transform attackPos;
     private Transform attackRotation;
@@ -51,14 +53,16 @@ public class PlayerAI : EntityAI
         if (iFrames > 0){
             iFrames -= Time.deltaTime;
         }
-        if (jumpTime < 1)
-            jumpTime += Time.deltaTime;
-    }
-    private void AttackPressed(){
-        if (attackCooldown <= 0){
+        if (inpJumpTime < 1) inpJumpTime += Time.deltaTime;
+        if (inpAttackTime < 1) inpAttackTime += Time.deltaTime;
+        if (attackCooldown <= 0 && inpAttackTime < 0.1){
+            inpAttackTime = 1;
             attackCooldown = 0.5f;
             StartCoroutine("Attack");
         }
+    }
+    private void AttackPressed(){
+        inpAttackTime = 0;
     }
     IEnumerator Attack(){
         isAttacking = true;
@@ -69,7 +73,7 @@ public class PlayerAI : EntityAI
         if (vertDir > 0.5){
             knockback = new Vector2(knockback.y,knockback.x);
         } else if (vertDir < -0.5){
-            knockback = new Vector2(knockback.y,-knockback.x);
+            knockback = new Vector2(-knockback.y,-knockback.x);
         }
         if (!facingRight){
             attackDir = Quaternion.Euler(0,0,-90*vertDir);
@@ -82,12 +86,19 @@ public class PlayerAI : EntityAI
         yield return new WaitForSeconds(0.125f);
         #region Hit enemies in Hitbox
         Collider2D[] objectsToDamage = Physics2D.OverlapCircleAll(attackPos.position,0.7f,attackLayerMask);
+        int enemiesHit = 0;
         foreach (Collider2D collider2D in objectsToDamage)
         {
             IDamageable iDamageable = collider2D.gameObject.GetComponent<IDamageable>();
             if (iDamageable != null){
                 iDamageable.TakeDamage(1,knockback,DamageType.slash);
+                enemiesHit ++;
             }
+        }
+        if (enemiesHit > 0){
+            Vector2 selfKnockback = new Vector2(-knockback.x,-knockback.y) * 0.4f;
+            if (vertDir < -0.5) selfKnockback.Set(selfKnockback.x,selfKnockback.y*4);
+            Knockback(selfKnockback,0.125f);
         }
         #endregion
         yield return new WaitForSeconds(0.125f);
@@ -179,10 +190,10 @@ public class PlayerAI : EntityAI
         }
         #endregion
         //Jump
-        if (!touchingTop && !stunned && rb.velocity.y <= 0.05 && jumpTime < 0.1){
+        if (!touchingTop && !stunned && rb.velocity.y <= 0.05 && inpJumpTime < 0.1){
             if (airTime < 0.1) {
                 rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-                jumpTime = 1;
+                inpJumpTime = 1;
             }
             else if (wallJumpTime < 0.05 && wallJumpUpForce > 0) {
                 if (touchingLeft && rb.velocity.x <= 0){
@@ -195,7 +206,7 @@ public class PlayerAI : EntityAI
         }
     }
     private void JumpPressed(){
-        jumpTime = 0;
+        inpJumpTime = 0;
     }
     private void OnEnable() {
         controls.Enable();

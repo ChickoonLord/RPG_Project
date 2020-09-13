@@ -6,6 +6,7 @@ using TMPro;
 
 public class InventorySlot : UITween
 {
+    public Inventory parentInventory;
     public InvItem invItem = null;
     public Image icon;
     public TextMeshProUGUI stackDisplay;

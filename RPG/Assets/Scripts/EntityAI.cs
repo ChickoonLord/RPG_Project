@@ -27,7 +27,7 @@ public abstract class EntityAI : MonoBehaviour, IDamageable
         }
         return damage;
     }
-    void Knockback(Vector2 knockback, float duration = 0.3f){
+    protected void Knockback(Vector2 knockback, float duration = 0.3f){
         if (stunTime < duration)
             stunTime = duration;
         rb.velocity = Vector2.zero;

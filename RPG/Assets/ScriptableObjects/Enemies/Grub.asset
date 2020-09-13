@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 304ae5f1f724d8c49bc2c5ab7798b550, type: 3}
   m_Name: Grub
   m_EditorClassIdentifier: 
-  maxHp: 10
+  maxHp: 20
+  speed: 2
   dropChances: []
