@@ -19,8 +19,8 @@ public class ItemChance
             return new InvItem(possibleItems[itemID],amount);
         }
     }
-    public ItemChance(Item[] _possibleItems, float _chance = 1, int _amount = 1, int _optionalMaxAmount = 0){
-        possibleItems = _possibleItems;
+    public ItemChance(IList<Item> _possibleItems, float _chance = 1, int _amount = 1, int _optionalMaxAmount = 0){
+        possibleItems = (Item[])_possibleItems;
         chance = _chance;
         amount = _amount;
         optionalMaxAmount = _optionalMaxAmount;

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Rock
   m_EditorClassIdentifier: 
   name: Rock
-  icon: {fileID: 21300000, guid: ec06df65b63047748801fca722708118, type: 3}
+  icon: {fileID: 21300000, guid: c4c548a339b4d41a590928c0c98934a7, type: 3}
   description: 
   value: 1
   type: 0

@@ -327,7 +327,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6305861812702793913}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6305861812702793915}
+        m_MethodName: SlotClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &6305861812702793915
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -344,8 +355,10 @@ MonoBehaviour:
   enableTweenDelay: 0
   disabledScale: {x: 0, y: 0}
   hoverScale: {x: 1, y: 1}
+  parentInventory: {fileID: 0}
+  slotIndex: 0
   invItem:
-    item: {fileID: 0}
     stackCount: 0
+  defaultIcon: {fileID: 0}
   icon: {fileID: 394578793630345451}
   stackDisplay: {fileID: 1690204923}

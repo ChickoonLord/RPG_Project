@@ -11,7 +11,8 @@ public class InvManager : MonoBehaviour
     public InventoryUI inventoryUI;
     public InventoryUI weaponSlotUI;
     public InventoryUI[] equipmentSlotUI;
-    public static UIScreen currentUIScreen;
+    public static UIType currentUIType = UIType.Inventory;
+    public static Inventory currentOpenInventory;
     private void Awake() {
         if (instance){
             Destroy(gameObject);
@@ -32,7 +33,7 @@ public class InvManager : MonoBehaviour
         }
     }
 
-    public enum UIScreen{
+    public enum UIType{
         None,
         Inventory,
         Container,

@@ -1,25 +1,27 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-public enum ItemType{
-    Default,
-    Consumable,
-    Equipment,
-    Weapon
-}
 
-
-[CreateAssetMenu(fileName = "Item", menuName = "Items/Item", order = 0)]
+[CreateAssetMenu(fileName = "Item", menuName = "Items/Simple", order = 0)]
 public class Item : ScriptableObject {
     public new string name = "New Item";
     public Sprite icon = null;
-    [TextArea(2,10)]
-    public string description;
+    [TextArea(2,10), Multiline] public string description;
     public int value = 1;
-    public ItemType type = ItemType.Default;
+    public Rarity rarity = Rarity.Common;
+    [HideInInspector] public ItemType type = ItemType.Simple;
     public bool stackable = true;
 
-    public virtual void Use(){
-        Debug.Log(name+" used!");
+
+    public enum ItemType{
+        Simple,
+        Consumable,
+        Equipment,
+        Weapon
+    }
+    public enum Rarity{
+        Common,
+        Uncommon,
+        Rare
     }
 }

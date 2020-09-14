@@ -8,6 +8,8 @@ public class SingleInventoryUI : InventoryUI
     public override void Initialize(Inventory _inventory){
         invSlot = GetComponent<InventorySlot>();
         inventory = _inventory;
+        invSlot.parentInventory = inventory;
+        invSlot.slotIndex = 0;
         if (enabled) OnEnable();
     }
     protected override void UpdateUI()

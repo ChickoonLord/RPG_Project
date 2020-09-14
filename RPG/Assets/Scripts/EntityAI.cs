@@ -4,7 +4,7 @@ using UnityEngine;
 
 public abstract class EntityAI : MonoBehaviour, IDamageable
 {
-    protected int hp;
+    public int hp;
     protected int maxHp;
     public bool facingRight = true;
     protected bool isAttacking = false;
@@ -35,6 +35,9 @@ public abstract class EntityAI : MonoBehaviour, IDamageable
     }
     protected virtual void Die(){
         Destroy(gameObject);
+    }
+    public virtual void Heal(int amount){
+        hp = Mathf.Clamp(hp+amount,hp,maxHp);
     }
     protected virtual void Update() {
         if (stunTime>0){

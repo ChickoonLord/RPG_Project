@@ -8,7 +8,8 @@ public class ItemPickup : Interactable
     private SpriteRenderer spriteRenderer;
     protected void Awake() {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        spriteRenderer.sprite = invItem.item.icon;
+        if (invItem.item) spriteRenderer.sprite = invItem.item.icon;
+        else Destroy(gameObject);
     }
     public override void Interact()
     {

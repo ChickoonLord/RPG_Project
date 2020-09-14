@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0bbaba88a28f1b4986398bcb932f834, type: 3}
   m_Name: Sword
   m_EditorClassIdentifier: 
-  name: New Item
-  icon: {fileID: 0}
+  name: Wooden Sword
+  icon: {fileID: 21300000, guid: b8aaa707027cc4f79af3439c5dbc9652, type: 3}
   description: 
   value: 1
   type: 3
