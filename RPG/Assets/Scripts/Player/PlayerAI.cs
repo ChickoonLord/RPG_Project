@@ -4,27 +4,31 @@ using UnityEngine;
 
 public class PlayerAI : EntityAI
 {
-    //Movement variables;
-    public float jumpForce = 10;
-    private float inpJumpTime = 1;
+    #region PlayerEntity Variables
+    [SerializeField] private PlayerEntity playerEntity = null;
+    private float jumpForce;
+    private float airControl;
+    private float wallJumpUpForce;
+    private float wallJumpSideForce;
+    #endregion
+    #region Touching Walls
     private float airTime = 1;
-    public float wallJumpTime = 1;
-    public float airControl = 3;
-    public float wallJumpUpForce = 7;
-    public float wallJumpSideForce = 4.5f;
+    [HideInInspector] public float wallJumpTime = 1;
     private bool touchingFloor;
     private bool touchingTop;
     private bool touchingRight;
     private bool touchingLeft;
     [SerializeField] protected LayerMask platformLayerMask;
-    [SerializeField] protected LayerMask attackLayerMask;
+    #endregion
     float iFrames = 0;
     float attackCooldown = 0;
     private float inpAttackTime = 1;
-    public GameObject weaponPrefab;
-    private Transform attackPos;
-    private Transform attackRotation;
-    public Controls controls;
+    private float inpJumpTime = 1;
+    [SerializeField] private GameObject weaponObject = null;
+    private WeaponBehavior weaponBehavior = null;
+    [HideInInspector] public Transform attackPos;
+    [HideInInspector] public Transform attackRotation;
+    private Controls controls;
     public static PlayerAI instance;
     protected override void Awake()
     {
@@ -34,7 +38,12 @@ public class PlayerAI : EntityAI
         instance = this;
 
         base.Awake();
-        hp = 20;
+        hp = playerEntity.maxHp;
+        moveSpeed = playerEntity.speed;
+        jumpForce = playerEntity.jumpForce;
+        airControl = playerEntity.airControl;
+        wallJumpUpForce = playerEntity.wallJumpUpForce;
+        if (wallJumpUpForce > 0) wallJumpSideForce = playerEntity.wallJumpSideForce;
 
         controls = new Controls();
         controls.Player.Jump.performed += ctx => JumpPressed();
@@ -53,56 +62,63 @@ public class PlayerAI : EntityAI
         if (iFrames > 0){
             iFrames -= Time.deltaTime;
         }
+        //Set airTime based on If touching Floor
+        if (!touchingFloor) {
+            airTime += 1 * Time.deltaTime;
+        } else {
+            airTime = 0;
+        }
+        //Set wallJumpTime based of If touching Wall
+        if (!touchingRight && !touchingLeft || touchingFloor) {
+            wallJumpTime += 1 * Time.deltaTime;
+        } else {
+            wallJumpTime = 0;
+        }
+
+        //Animations for touching walls
+        if (rb.velocity.y <= -2){
+            if (facingRight){
+                animator.SetBool("SlidingRightWall",touchingRight);
+                if (!touchingRight) animator.SetBool("SlidingLeftWall",touchingLeft);
+                else animator.SetBool("SlidingLeftWall",false);
+            } else {
+                animator.SetBool("SlidingRightWall",touchingLeft);
+                if (!touchingRight) animator.SetBool("SlidingLeftWall",touchingRight);
+                else animator.SetBool("SlidingLeftWall",false);
+            }
+        } else {
+            animator.SetBool("SlidingRightWall",false);
+            animator.SetBool("SlidingLeftWall",false);
+        }
+        
         if (inpJumpTime < 1) inpJumpTime += Time.deltaTime;
         if (inpAttackTime < 1) inpAttackTime += Time.deltaTime;
+
+        //Trigger Attack
         if (attackCooldown <= 0 && inpAttackTime < 0.1){
-            inpAttackTime = 1;
-            attackCooldown = 0.5f;
-            StartCoroutine("Attack");
-        }
-    }
-    private void AttackPressed(){
-        inpAttackTime = 0;
-    }
-    IEnumerator Attack(){
-        isAttacking = true;
-        #region Calculate/Set Attack Direction
-        float vertDir = Input.GetAxisRaw("Vertical");
-        Quaternion attackDir = Quaternion.Euler(0,0,90*vertDir);
-        Vector2 knockback = new Vector2(2,1);
-        if (vertDir > 0.5){
-            knockback = new Vector2(knockback.y,knockback.x);
-        } else if (vertDir < -0.5){
-            knockback = new Vector2(-knockback.y,-knockback.x);
-        }
-        if (!facingRight){
-            attackDir = Quaternion.Euler(0,0,-90*vertDir);
-            knockback = new Vector2(-knockback.x,knockback.y);
-        }
-        attackRotation.rotation = attackDir;
-        
-        #endregion
-        Instantiate(weaponPrefab,attackPos.position,attackDir,transform);
-        yield return new WaitForSeconds(0.125f);
-        #region Hit enemies in Hitbox
-        Collider2D[] objectsToDamage = Physics2D.OverlapCircleAll(attackPos.position,0.7f,attackLayerMask);
-        int enemiesHit = 0;
-        foreach (Collider2D collider2D in objectsToDamage)
-        {
-            IDamageable iDamageable = collider2D.gameObject.GetComponent<IDamageable>();
-            if (iDamageable != null){
-                iDamageable.TakeDamage(1,knockback,DamageType.slash);
-                enemiesHit ++;
+            if (weaponBehavior){
+                weaponBehavior.StartCoroutine("Attack");
+                inpAttackTime = 1;
+                attackCooldown = weaponBehavior.WeaponItem.cooldown;
             }
         }
-        if (enemiesHit > 0){
-            Vector2 selfKnockback = new Vector2(-knockback.x,-knockback.y) * 0.4f;
-            if (vertDir < -0.5) selfKnockback.Set(selfKnockback.x,selfKnockback.y*4);
-            Knockback(selfKnockback,0.125f);
+    }
+    private void WeaponChanged(){
+        Debug.Log("Weapon Changed");
+        if (weaponObject) Destroy(weaponObject);
+        if (!InvManager.weaponSlot.IsFull()){
+            weaponBehavior = null;
+            return;
         }
-        #endregion
-        yield return new WaitForSeconds(0.125f);
-        isAttacking = false;
+        Weapon weaponItem = InvManager.weaponSlot.items[0].item as Weapon;
+        weaponObject = Instantiate(weaponItem.weaponPrefab,attackRotation.position,Quaternion.identity,attackRotation);
+        weaponBehavior = weaponObject.GetComponent<WeaponBehavior>();
+        weaponBehavior.WeaponItem = weaponItem;
+        weaponBehavior.PlayerAI = this;
+    }
+    private void AttackPressed(){
+        if (GameManager.paused) return;
+        inpAttackTime = 0;
     }
     public override int TakeDamage(int damage, Vector2? knockback = null, DamageType damageType = DamageType.none)
     {
@@ -124,45 +140,19 @@ public class PlayerAI : EntityAI
     void FixedUpdate(){
         #region Detect Collisions With Terrain
         //Detect if touching Terrain
-        RaycastHit2D bottomRaycastHit = Physics2D.BoxCast(col.bounds.center, new Vector2(0.8f,0.8f), 0f, Vector2.down, 0.15f, platformLayerMask);
-        RaycastHit2D topRaycastHit = Physics2D.BoxCast(col.bounds.center, new Vector2(0.8f,0.8f), 0f, Vector2.up, 0.15f, platformLayerMask);
-        RaycastHit2D rightRaycastHit = Physics2D.BoxCast(col.bounds.center, new Vector2(0.8f,0.8f), 0f, Vector2.right, 0.15f, platformLayerMask);
-        RaycastHit2D leftRaycastHit = Physics2D.BoxCast(col.bounds.center, new Vector2(0.8f,0.8f), 0f, Vector2.left, 0.15f, platformLayerMask);
-        if (bottomRaycastHit.collider != null){
-            touchingFloor = true;
-            //Debug.Log("floor");
-        } else {
-            touchingFloor = false;
-            //Debug.Log("no floor");
-        } if (rightRaycastHit.collider != null){
-            touchingRight = true;
-            //Debug.Log("right");
-        } else {
-            touchingRight = false;
-        } if (leftRaycastHit.collider != null){
-            touchingLeft = true;
-            //Debug.Log("left");
-        } else {
-            touchingLeft = false;
-        } if (topRaycastHit.collider != null){
-            touchingTop = true;
-        } else {
-            touchingTop = false;
-        }
-        //Set airTime based on If touching Floor
-        if (!touchingFloor) {
-            airTime += 1 * Time.deltaTime;
-        } else {
-            airTime = 0;
-        }
-        //Set wallJumpTime based of If touching Wall
-        if (!touchingRight && !touchingLeft || touchingFloor) {
-            wallJumpTime += 1 * Time.deltaTime;
-        } else {
-            wallJumpTime = 0;
-        }
+        RaycastHit2D bottomRaycastHit = Physics2D.BoxCast(col.bounds.center, col.bounds.size*0.9f, 0f, Vector2.down, 0.15f, platformLayerMask);
+        RaycastHit2D topRaycastHit = Physics2D.BoxCast(col.bounds.center, col.bounds.size*0.9f, 0f, Vector2.up, 0.15f, platformLayerMask);
+        RaycastHit2D rightRaycastHit = Physics2D.BoxCast(col.bounds.center, col.bounds.size*0.9f, 0f, Vector2.right, 0.15f, platformLayerMask);
+        RaycastHit2D leftRaycastHit = Physics2D.BoxCast(col.bounds.center, col.bounds.size*0.9f, 0f, Vector2.left, 0.15f, platformLayerMask);
+        touchingFloor = (bottomRaycastHit.collider != null);
+        touchingRight = (rightRaycastHit.collider != null);
+        touchingLeft = (leftRaycastHit.collider != null);
+        touchingTop = (topRaycastHit.collider != null);
         #endregion
         #region Movement
+        //Move Animations
+        animator.SetFloat("MoveSpeed",Mathf.Abs(rb.velocity.x));
+        animator.SetBool("InAir",!touchingFloor);
         //Move
         float moveDir = Input.GetAxisRaw("Horizontal");
         if (!stunned){
@@ -206,12 +196,15 @@ public class PlayerAI : EntityAI
         }
     }
     private void JumpPressed(){
+        if (GameManager.paused) return;
         inpJumpTime = 0;
     }
     private void OnEnable() {
         controls.Enable();
+        InvManager.weaponSlot.onItemChangedCallback += WeaponChanged;
     }
     private void OnDisable() {
         controls.Disable();
+        InvManager.weaponSlot.onItemChangedCallback -= WeaponChanged;
     }
 }

@@ -19,6 +19,8 @@ public class CameraFollow : MonoBehaviour
             targetPos = new Vector2(Mathf.Clamp(xPos,minPosition.x,maxPosition.x),
                 Mathf.Clamp(yPos,minPosition.y,maxPosition.y));
         }
+    }
+    private void LateUpdate() {
         transform.position = new Vector3(Mathf.Lerp(transform.position.x,targetPos.x,followSpeed*Time.deltaTime),
             Mathf.Lerp(transform.position.y,targetPos.y,followSpeed*Time.deltaTime),transform.position.z);
     }

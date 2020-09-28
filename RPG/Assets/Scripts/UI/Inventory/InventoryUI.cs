@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InventoryUI : MonoBehaviour
+public class InventoryUI : UITween
 {
-    protected Inventory inventory = null;
+    public Inventory inventory = null;
     public Transform slotsParent;
     private InventorySlot[] invSlots;
 

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 [RequireComponent(typeof(RectTransform))]
-public class UITween : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class UITween : MonoBehaviour
 {
+    [SerializeField] public bool useManualEnable = false;
     protected RectTransform rectTransform;
-    protected Vector2 defaultScale;
+    protected Vector2 defaultScale = Vector2.one;
     [SerializeField] protected float tweenDuration = 0.2f;
     [SerializeField] protected float enableTweenDelay = 0;
     [SerializeField] protected Vector2 disabledScale = Vector2.zero;
@@ -15,23 +16,25 @@ public class UITween : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     protected virtual void Awake() {
         rectTransform = GetComponent<RectTransform>();
         defaultScale = rectTransform.localScale;
-        Enabled = enabled;
     }
     public void Enable() {
         if (disabledScale == defaultScale || Enabled || enableTweenDelay < 0)
             return;
+        if (useManualEnable) gameObject.SetActive(true);
         rectTransform.localScale = disabledScale;
-        gameObject.SetActive(true);
         Enabled = true;
-        //LeanTween.cancel(currentTweenID);
+        LeanTween.cancel(gameObject);
         LeanTween.scale(rectTransform, defaultScale, tweenDuration).setIgnoreTimeScale(true).setDelay(enableTweenDelay);
     }
     public void Disable() {
         if (disabledScale == defaultScale || !Enabled || enableTweenDelay < 0)
             return;
+        Enabled = false;
+        LeanTween.cancel(gameObject);
         LeanTween.scale(rectTransform, disabledScale, tweenDuration).setIgnoreTimeScale(true).setOnComplete(ActuallyDisable);
     }
     protected void ActuallyDisable(){
+        LeanTween.cancel(gameObject);
         gameObject.SetActive(false);
     }
     public void ToggleEnabled(){
@@ -41,10 +44,12 @@ public class UITween : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             Enable();
         }
     }
-    public virtual void OnPointerEnter(PointerEventData pointer){
-
+    private void OnEnable() {
+        if (!useManualEnable){
+            Enable();
+        }
     }
-    public virtual void OnPointerExit(PointerEventData pointer){
-
+    private void OnDisable() {
+        Enabled = false;
     }
 }

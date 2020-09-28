@@ -20,7 +20,7 @@ public class ConsumableBag : Consumable {
     {
         foreach (ItemChance itemChance in itemChances)
         {
-            InvManager.inventory.Add(itemChance.GetInvItem());
+            InvManager.playerInventory.Add(itemChance.GetInvItem());
         }
         return base.Use();
     }

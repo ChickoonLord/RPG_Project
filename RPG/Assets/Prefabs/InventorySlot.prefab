@@ -351,14 +351,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6a44343cf136dc4099983adbbc44d34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useManualEnable: 0
   tweenDuration: 0.2
-  enableTweenDelay: 0
+  enableTweenDelay: 0.2
   disabledScale: {x: 0, y: 0}
   hoverScale: {x: 1, y: 1}
-  parentInventory: {fileID: 0}
   slotIndex: 0
   invItem:
-    stackCount: 0
+    item: {fileID: 0}
+    _stackCount: 0
   defaultIcon: {fileID: 0}
   icon: {fileID: 394578793630345451}
   stackDisplay: {fileID: 1690204923}

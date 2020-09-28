@@ -9,8 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bdf244d117e9c11449c7b767c4135745, type: 3}
+  m_Script: {fileID: 11500000, guid: 237f0917dad53764fb88365a3c8d0f86, type: 3}
   m_Name: Player
   m_EditorClassIdentifier: 
   maxHp: 20
   speed: 5
+  jumpForce: 10
+  airControl: 3
+  wallJumpUpForce: 0
+  wallJumpSideForce: 0

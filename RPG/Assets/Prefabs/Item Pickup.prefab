@@ -14,7 +14,7 @@ GameObject:
   m_Layer: 0
   m_Name: Item Pickup
   m_TagString: Interactable
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 6519382022992737161, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -97,5 +97,5 @@ MonoBehaviour:
   radius: 2
   playerInRadius: 0
   invItem:
-    item: {fileID: 11400000, guid: 6a915a893f6e7f541b4780d2c98ac88d, type: 2}
-    stackCount: 1
+    item: {fileID: 11400000, guid: 1f1921656f90a8445855d4984355e86b, type: 2}
+    _stackCount: 1

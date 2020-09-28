@@ -7,7 +7,7 @@ public class Item : ScriptableObject {
     public new string name = "New Item";
     public Sprite icon = null;
     [TextArea(2,10), Multiline] public string description;
-    public int value = 1;
+    [Min(0)] public int value = 1;
     public Rarity rarity = Rarity.Common;
     [HideInInspector] public ItemType type = ItemType.Simple;
     public bool stackable = true;

@@ -1,18 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-[System.Serializable]
+
 public class Inventory
 {
     public delegate void OnItemChanged();
     public OnItemChanged onItemChangedCallback;
-    public int maxSize = 20;
-    public List<InvItem> items = new List<InvItem>();
+    public readonly int maxSize;
+    public List<InvItem> items;
+    public readonly InvType type;
 
-    public Inventory(int invSize = 20, IList<InvItem> startingInv = null){
+    public Inventory(int invSize = 1, InvType inventoryType = InvType.Container, IList<InvItem> startingInv = null){
         maxSize = invSize;
+        type = inventoryType;
         if (startingInv != null){
             items = (List<InvItem>)startingInv;
+        } else {
+            items = new List<InvItem>();
         }
     }
     #region Add, Remove, Move, and Consume Item functions
@@ -20,7 +24,7 @@ public class Inventory
         if (invItem.item.stackable){
             InvItem _item = FindItem(invItem.item);
             if (_item == null){
-                if (items.Count >= maxSize)
+                if (IsFull())
                     return false;
                 if (replaceIndex >= 0 && replaceIndex < items.Count) items[replaceIndex] = invItem;
                 else items.Add(invItem);
@@ -28,9 +32,8 @@ public class Inventory
                 _item.stackCount += invItem.stackCount;
             }
         } else {
-            if (items.Count >= maxSize)
-                return false;
             if (replaceIndex != -1 && replaceIndex < items.Count) items[replaceIndex] = invItem;
+            else if (IsFull()) return false;
             else items.Add(invItem);
         }
         if (onItemChangedCallback != null)
@@ -65,7 +68,7 @@ public class Inventory
     public bool MoveItemToInventory(int fromIndex, Inventory toInventory, int replaceIndex = -1){
         bool moveSuccessful;
         InvItem itemBeingSwapped = null;
-        if (toInventory.items.Count >= toInventory.maxSize){
+        if (toInventory.IsFull()){
             if (replaceIndex < 0 || replaceIndex >= toInventory.items.Count) return false;
             itemBeingSwapped = toInventory.items[replaceIndex];
             moveSuccessful = toInventory.Add(items[fromIndex],replaceIndex);
@@ -99,6 +102,9 @@ public class Inventory
         return consumeSuccessful;
     }
     #endregion
+    public bool IsFull(){
+        return (items.Count >= maxSize);
+    }
     #region Functions to find items in inventory
     public bool ItemExists(Item item){
         return items.Exists(x => x.item == item);
@@ -124,4 +130,13 @@ public class Inventory
         return FindItem(invItem.item);
     }
     #endregion
+
+    public enum InvType
+    {
+        Container,
+        PlayerInv,
+        EquipmentSlot,
+        WeaponSlot,
+        Shop
+    }
 }
